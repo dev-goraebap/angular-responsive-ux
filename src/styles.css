@@ -57,10 +57,23 @@
   --font-body: 'Inter Variable', system-ui, sans-serif;
 }
 
-/* 기본 바탕 — 디스코드는 deep-indigo 다크 캔버스를 기반으로 합니다.
-   라이트 테마는 이후 토큰 스왑으로 추가합니다. */
+/* 기본 바탕 — 디스코드는 deep-indigo 다크 캔버스를 기반으로 합니다(기본 테마). */
 :root {
   color-scheme: dark;
+}
+
+/* 라이트 테마 — 폴라리티 플립(밝은 면 + 어두운 글자). 같은 토큰 이름의 값만 스왑하므로
+   유틸리티(bg-canvas·text-ink…)는 그대로 두고 색만 따라 바뀝니다. 브랜드 색(primary·green·
+   magenta·link)과 ink-dark(밝은 면 위 어두운 글자)는 유지합니다. */
+[data-theme='light'] {
+  color-scheme: light;
+  --color-canvas: #f2f3f5;
+  --color-surface-indigo: #ffffff;
+  --color-surface-onyx: #e3e5e8;
+  --color-surface-black: #ffffff;
+  --color-ink: #1a1a1e;
+  --color-muted: #c7ccd1;
+  --color-hairline: #d4d7dc;
 }
 
 body {
@@ -69,4 +82,8 @@ body {
   background-color: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-body);
+  /* 테마 전환을 부드럽게 */
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }

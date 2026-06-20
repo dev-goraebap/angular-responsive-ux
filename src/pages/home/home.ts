@@ -22,9 +22,9 @@ import { AddTodoSheet } from './ui/add-todo-sheet';
     ListItem,
     AddTodoSheet,
   ],
-  host: { class: 'block' },
+  host: { class: 'block h-full' },
   template: `
-    <div class="flex h-dvh flex-col">
+    <div class="relative flex h-full flex-col">
       <header class="flex items-baseline justify-between px-lg pt-xl pb-md">
         <h1 class="font-display text-3xl font-bold text-ink">할 일</h1>
         <span class="text-ink/50">{{ remaining() }}개 남음</span>
@@ -67,8 +67,7 @@ import { AddTodoSheet } from './ui/add-todo-sheet';
 
       <button
         type="button"
-        class="fixed end-lg flex size-14 items-center justify-center rounded-pill bg-green text-3xl text-ink-dark shadow-[0_0_32px_rgba(53,237,126,0.45)]"
-        style="bottom: calc(env(safe-area-inset-bottom) + var(--spacing-lg))"
+        class="absolute end-lg bottom-lg flex size-14 items-center justify-center rounded-pill bg-green text-3xl text-ink-dark shadow-[0_0_32px_rgba(53,237,126,0.45)]"
         (click)="addOpen.set(true)"
         aria-label="할 일 추가"
       >
