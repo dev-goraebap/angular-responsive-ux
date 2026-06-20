@@ -27,18 +27,19 @@ import { AddTodoSheet } from './ui/add-todo-sheet';
     <div class="relative flex h-full flex-col">
       <header class="flex items-baseline justify-between px-lg pt-xl pb-md">
         <h1 class="font-display text-3xl font-bold text-ink">할 일</h1>
-        <span class="text-ink/50">{{ remaining() }}개 남음</span>
+        <span class="text-ink/70">{{ remaining() }}개 남음</span>
       </header>
 
       @if (todos.todos().length === 0) {
-        <p class="flex flex-1 items-center justify-center px-lg text-center text-ink/40">
+        <p class="flex flex-1 items-center justify-center px-lg text-center text-ink/70">
           아직 할 일이 없습니다.<br />아래 + 버튼으로 추가하세요.
         </p>
       } @else {
-        <cdk-virtual-scroll-viewport itemSize="72" class="flex-1">
+        <cdk-virtual-scroll-viewport itemSize="72" class="flex-1" role="list">
           <ui-list-item
             *cdkVirtualFor="let todo of todos.todos(); trackBy: trackById"
             class="block px-md py-1"
+            role="listitem"
             (swipe)="toggle(todo)"
           >
             <div class="flex h-16 items-center gap-md px-md">

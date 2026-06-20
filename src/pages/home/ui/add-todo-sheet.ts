@@ -21,7 +21,7 @@ import { Button, Sheet } from '@/shared/ui';
       <form class="flex flex-col gap-md pb-lg" (submit)="$event.preventDefault(); submit()">
         <input
           #titleInput
-          class="rounded-md bg-surface-indigo px-md py-sm text-ink outline-none placeholder:text-ink/40"
+          class="rounded-md bg-surface-indigo px-md py-sm text-ink outline-none placeholder:text-ink/60 focus-visible:ring-2 focus-visible:ring-primary"
           placeholder="무엇을 할까요?"
           [value]="title()"
           (input)="title.set($any($event.target).value)"

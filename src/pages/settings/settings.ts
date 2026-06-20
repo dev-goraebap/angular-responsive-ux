@@ -39,7 +39,7 @@ import { PwaInstallService, ThemeService } from '@/shared/lib';
           <div class="flex items-center justify-between rounded-md bg-surface-indigo px-md py-md">
             <div class="flex flex-col">
               <span class="text-ink">앱 설치</span>
-              <span class="text-sm text-ink/50">홈 화면에 추가해 앱처럼 사용</span>
+              <span class="text-sm text-ink/70">홈 화면에 추가해 앱처럼 사용</span>
             </div>
             <button ui-button variant="primary" (click)="install.install()">설치</button>
           </div>
