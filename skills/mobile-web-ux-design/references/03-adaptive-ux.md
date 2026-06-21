@@ -45,7 +45,7 @@ export class BreakpointService {
 padding-bottom: calc(env(safe-area-inset-bottom) + var(--spacing-lg));
 ```
 
-다만 이 값이 실제로 0이 아닌 값을 가지려면 `index.html`의 viewport에 `viewport-fit=cover`가 있어야 한다. 이것이 빠지면 inset은 늘 0이라 코드가 맞아도 효과가 없다. 그래서 safe-area는 4층(PWA)의 standalone 맥락과도 이어진다. 브라우저 탭 안에서는 시스템이 노치 영역을 먹지만, 설치된 전체화면에서 비로소 inset이 의미를 갖는다.
+다만 이 값이 실제로 0이 아닌 값을 가지려면 `index.html`의 viewport에 `viewport-fit=cover`가 있어야 한다. 이것이 빠지면 inset은 늘 0이라 코드가 맞아도 효과가 없다. 이는 일반 웹앱에서도 필요하다. 모바일 브라우저에서도 노치나 홈 인디케이터가 차지하는 영역이 있어, 뷰포트가 그 영역까지 펼쳐지는 순간 inset이 의미를 갖는다. 가로 모드나 하단 제스처 바 근처에서 특히 그렇다.
 
 ## 제스처는 속도까지 본다
 
