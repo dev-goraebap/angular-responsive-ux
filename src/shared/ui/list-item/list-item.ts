@@ -18,10 +18,11 @@ import { gsap, Draggable, InertiaPlugin } from '@/shared/lib/gsap';
 @Component({
   selector: 'ui-list-item',
   template: `
-    <div class="relative overflow-hidden rounded-md">
-      <!-- 스와이프로 드러나는 완료 힌트 -->
+    <div class="relative overflow-hidden rounded-md bg-surface-indigo">
+      <!-- 스와이프로 드러나는 완료 힌트. 컨테이너 배경(표면색)이 둥근 모서리 곡선 뒤를 채우고,
+           힌트를 2px 안쪽으로 들여 같은 라운드를 줘 모서리에서 초록이 비치는 프린지를 막는다. -->
       <div
-        class="absolute inset-0 flex items-center justify-start bg-green px-lg font-medium text-ink-dark"
+        class="absolute inset-0.5 flex items-center justify-start rounded-md bg-green px-lg font-medium text-ink-dark"
         aria-hidden="true"
       >
         완료
