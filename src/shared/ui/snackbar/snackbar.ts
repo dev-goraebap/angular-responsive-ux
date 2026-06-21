@@ -12,14 +12,14 @@ import { gsap } from '@/shared/lib/gsap';
   selector: 'ui-snackbar',
   template: `
     <div
-      class="m-md flex items-center gap-md rounded-md bg-surface-onyx px-md py-sm text-ink shadow-[0_0_24px_rgba(0,0,0,0.45)]"
+      class="flex w-[min(92vw,28rem)] items-center gap-sm rounded-lg border border-ink/10 bg-surface-onyx py-xs pr-xs pl-lg text-ink shadow-lg"
       style="margin-bottom: calc(env(safe-area-inset-bottom) + var(--spacing-md))"
     >
-      <span class="flex-1">{{ message() }}</span>
+      <span class="flex-1 py-sm text-sm">{{ message() }}</span>
       @if (actionLabel(); as label) {
         <button
           type="button"
-          class="min-h-11 px-xs font-medium text-link"
+          class="min-h-11 shrink-0 rounded-md px-md font-semibold text-primary transition-colors hover:bg-primary/10"
           (click)="action.emit()"
         >
           {{ label }}

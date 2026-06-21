@@ -4,7 +4,7 @@ import {
   CdkVirtualForOf,
   CdkVirtualScrollViewport,
 } from '@angular/cdk/scrolling';
-import { ListItem, SnackbarService } from '@/shared/ui';
+import { Checkbox, ListItem, SnackbarService } from '@/shared/ui';
 import { TodoStore, type Todo } from '@/shared/api';
 import { AddTodoSheet } from './ui/add-todo-sheet';
 
@@ -19,6 +19,7 @@ import { AddTodoSheet } from './ui/add-todo-sheet';
     CdkVirtualScrollViewport,
     CdkFixedSizeVirtualScroll,
     CdkVirtualForOf,
+    Checkbox,
     ListItem,
     AddTodoSheet,
   ],
@@ -43,12 +44,11 @@ import { AddTodoSheet } from './ui/add-todo-sheet';
             (swipe)="toggle(todo)"
           >
             <div class="flex h-16 items-center gap-md px-md">
-              <input
-                type="checkbox"
-                class="size-5 shrink-0"
+              <ui-checkbox
+                class="shrink-0"
                 [checked]="todo.done"
-                (change)="toggle(todo)"
-                [attr.aria-label]="todo.title + ' 완료 토글'"
+                (checkedChange)="toggle(todo)"
+                [ariaLabel]="todo.title + ' 완료 토글'"
               />
               <span
                 class="flex-1 truncate text-ink"
