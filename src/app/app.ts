@@ -14,8 +14,11 @@ import { ThemeService } from '@/shared/lib';
   template: `
     <div class="flex h-dvh flex-col-reverse laptop:flex-row">
       <app-nav class="shrink-0" />
-      <main class="relative min-h-0 min-w-0 flex-1 overflow-hidden">
-        <router-outlet />
+      <main class="min-h-0 min-w-0 flex-1 overflow-hidden">
+        <!-- 콘텐츠를 가운데 최대폭 컬럼으로 모은다. 모바일은 풀폭, 데스크톱은 가운데 정렬. -->
+        <div class="relative mx-auto h-full w-full max-w-2xl">
+          <router-outlet />
+        </div>
       </main>
     </div>
   `,
