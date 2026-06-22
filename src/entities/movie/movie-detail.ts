@@ -3,9 +3,7 @@ import { Router } from '@angular/router';
 import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmBadge } from '@spartan-ng/helm/badge';
-import {
-  AuthService,
-} from '@/shared/auth';
+import { AuthService } from '@/shared/auth';
 import {
   GENRE_LABELS,
   MovieRepository,
@@ -13,6 +11,8 @@ import {
   WishlistRepository,
   type Movie,
 } from '@/shared/api';
+import { AdaptiveSheetService } from '@/shared/ui/adaptive-sheet';
+import { RateMovieSheet } from './rate-movie-sheet';
 
 /**
  * 영화 상세 콘텐츠 — 표현(모달/페이지)을 모른다.
@@ -71,29 +71,10 @@ import {
               >
                 {{ inWishlist() ? '♥ 위시리스트에 있음' : '♡ 위시리스트에 담기' }}
               </button>
+              <button hlmBtn variant="outline" (click)="openRating(m)">
+                {{ myRating() > 0 ? '내 평점 ★ ' + myRating() + ' · 수정' : '평점 남기기' }}
+              </button>
               <button hlmBtn variant="outline" (click)="share(m)">공유</button>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <span class="text-sm text-muted-foreground">내 평점</span>
-              <div class="flex" role="group" aria-label="별점 선택">
-                @for (n of stars; track n) {
-                  <button
-                    type="button"
-                    class="px-0.5 text-2xl leading-none"
-                    (click)="rate(m, n)"
-                    [attr.aria-label]="n + '점'"
-                    [attr.aria-pressed]="myRating() >= n"
-                  >
-                    <span [class]="myRating() >= n ? 'text-yellow-500' : 'text-muted-foreground/40'">
-                      ★
-                    </span>
-                  </button>
-                }
-              </div>
-              @if (myRating() > 0) {
-                <button hlmBtn variant="ghost" size="sm" (click)="clearRating(m)">지우기</button>
-              }
             </div>
           } @else {
             <div class="flex flex-wrap items-center gap-2">
@@ -123,6 +104,7 @@ export class MovieDetail {
   private readonly rating = inject(RatingRepository);
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly sheet = inject(AdaptiveSheetService);
   // 모달로 열렸을 때만 컨텍스트/레퍼런스가 있다(페이지로 열리면 null).
   private readonly ctx = injectBrnDialogContext<{ movieId?: string }>({ optional: true });
   private readonly dialogRef = inject(BrnDialogRef, { optional: true });
@@ -135,8 +117,6 @@ export class MovieDetail {
   readonly inWishlist = signal(false);
   readonly myRating = signal(0);
   readonly shareMessage = signal('');
-
-  protected readonly stars = [1, 2, 3, 4, 5];
 
   constructor() {
     effect(() => {
@@ -176,18 +156,16 @@ export class MovieDetail {
     }
   }
 
-  protected async rate(m: Movie, score: number): Promise<void> {
-    const uid = this.auth.userId();
-    if (!uid) return;
-    await this.rating.set(uid, m.id, score, new Date().toISOString());
-    this.myRating.set(score);
-  }
-
-  protected async clearRating(m: Movie): Promise<void> {
-    const uid = this.auth.userId();
-    if (!uid) return;
-    await this.rating.remove(uid, m.id);
-    this.myRating.set(0);
+  /** 평점 입력을 적응형 시트로 연다(모바일 바텀시트 / 데스크톱 모달). 결과로 내 점수를 갱신한다. */
+  protected openRating(m: Movie): void {
+    const ref = this.sheet.open<number>(RateMovieSheet, {
+      movieId: m.id,
+      title: m.title,
+      score: this.myRating(),
+    });
+    ref.closed.subscribe((result) => {
+      if (typeof result === 'number') this.myRating.set(result);
+    });
   }
 
   /** 비로그인 상태에서 회원 기능 유도 → 로그인 후 이 영화로 복귀. 모달이면 먼저 닫는다. */
