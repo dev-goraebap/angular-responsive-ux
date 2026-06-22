@@ -44,6 +44,7 @@ const DISMISS_THRESHOLD = 100;
           (touchstart)="onDragStart($event)"
           (touchmove)="onDragMove($event)"
           (touchend)="onDragEnd()"
+          (touchcancel)="onDragCancel()"
         >
           <div class="mx-auto h-1 w-10 rounded-full bg-muted" aria-hidden="true"></div>
         </div>
@@ -104,13 +105,18 @@ export class RateMovieSheet {
   }
 
   protected onDragStart(e: TouchEvent): void {
-    this.dragStartY = e.touches[0]?.clientY ?? null;
+    // 멀티터치는 무시한다(손가락이 바뀌면 clientY가 튀어 오작동).
+    if (e.touches.length !== 1) {
+      this.onDragCancel();
+      return;
+    }
+    this.dragStartY = e.touches[0].clientY;
     this.dragging.set(true);
   }
 
   protected onDragMove(e: TouchEvent): void {
-    if (this.dragStartY === null) return;
-    const dy = (e.touches[0]?.clientY ?? 0) - this.dragStartY;
+    if (this.dragStartY === null || e.touches.length !== 1) return;
+    const dy = e.touches[0].clientY - this.dragStartY;
     this.dragY.set(dy > 0 ? dy : 0);
   }
 
@@ -121,6 +127,13 @@ export class RateMovieSheet {
     } else {
       this.dragY.set(0); // 임계값 미만이면 제자리로(transition-transform로 부드럽게)
     }
+    this.dragStartY = null;
+  }
+
+  /** 시스템 인터럽트(전화 등) 등으로 제스처가 취소되면 상태를 초기화한다. */
+  protected onDragCancel(): void {
+    this.dragging.set(false);
+    this.dragY.set(0);
     this.dragStartY = null;
   }
 

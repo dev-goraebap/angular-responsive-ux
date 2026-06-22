@@ -1,6 +1,6 @@
 import { Overlay, type OverlayRef } from '@angular/cdk/overlay';
 import { ComponentPortal, type ComponentType } from '@angular/cdk/portal';
-import { Injectable, InjectionToken, Injector, inject } from '@angular/core';
+import { InjectionToken, Injector, Service, inject } from '@angular/core';
 import { NavigationStart, Router } from '@angular/router';
 import { Subject, filter, take } from 'rxjs';
 import { BreakpointService } from '@/shared/lib';
@@ -48,7 +48,7 @@ interface CloseWatcherLike {
  * 닫기는 백드롭·Esc·버튼과 함께 뒤로가기를 지원한다 — CloseWatcher 우선(중첩에 안전),
  * 없으면 라우터 이동 시 닫기로 폴백한다(오버레이가 다음 화면 위에 남지 않게).
  */
-@Injectable({ providedIn: 'root' })
+@Service()
 export class AdaptiveSheetService {
   private readonly overlay = inject(Overlay);
   private readonly injector = inject(Injector);

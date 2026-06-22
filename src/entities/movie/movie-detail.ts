@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { BrnDialogRef, injectBrnDialogContext } from '@spartan-ng/brain/dialog';
+import { injectBrnDialogContext } from '@spartan-ng/brain/dialog';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmBadge } from '@spartan-ng/helm/badge';
 import { AuthService } from '@/shared/auth';
@@ -105,9 +105,8 @@ export class MovieDetail {
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly sheet = inject(AdaptiveSheetService);
-  // 모달로 열렸을 때만 컨텍스트/레퍼런스가 있다(페이지로 열리면 null).
+  // 모달로 열렸을 때만 컨텍스트가 있다(페이지로 열리면 null).
   private readonly ctx = injectBrnDialogContext<{ movieId?: string }>({ optional: true });
-  private readonly dialogRef = inject(BrnDialogRef, { optional: true });
 
   readonly movieId = input<string>();
   private readonly resolvedId = computed(() => this.movieId() ?? this.ctx?.movieId ?? '');
@@ -144,9 +143,8 @@ export class MovieDetail {
     return GENRE_LABELS[key] ?? key;
   }
 
-  /** 장르 배지 → 장르별 목록으로. 모달이면 먼저 닫는다. */
+  /** 장르 배지 → 장르별 목록으로. 모달이면 라우터 이동이 모달을 닫는다(OpenMovieService). */
   protected goGenre(key: string): void {
-    this.dialogRef?.close();
     void this.router.navigate(['/genre', key]);
   }
 
@@ -174,9 +172,9 @@ export class MovieDetail {
     });
   }
 
-  /** 비로그인 상태에서 회원 기능 유도 → 로그인 후 이 영화로 복귀. 모달이면 먼저 닫는다. */
+  /** 비로그인 상태에서 회원 기능 유도 → 로그인 후 이 영화로 복귀.
+   *  모달이면 라우터 이동이 OpenMovieService에서 모달을 닫는다(여기서 직접 닫지 않음 → 이중 back 방지). */
   protected goLogin(m: Movie): void {
-    this.dialogRef?.close();
     void this.router.navigate(['/login'], { queryParams: { returnUrl: `/movies/${m.id}` } });
   }
 

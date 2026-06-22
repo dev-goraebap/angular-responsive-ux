@@ -33,6 +33,7 @@ const PAGE_SIZE = 12;
     '(touchstart)': 'onTouchStart($event)',
     '(touchmove)': 'onTouchMove($event)',
     '(touchend)': 'onTouchEnd()',
+    '(touchcancel)': 'onTouchCancel()',
   },
   template: `
     <!-- 당겨서 새로고침 인디케이터(모바일) -->
@@ -180,22 +181,29 @@ export default class Home implements OnDestroy {
   // ── 당겨서 새로고침(모바일) ──────────────────────────────
   protected onTouchStart(e: TouchEvent): void {
     const main = this.scroller();
-    if (this.bp.isMobile() && main && main.scrollTop <= 0) {
-      this.pullStartY = e.touches[0]?.clientY ?? null;
+    // 멀티터치(핀치 줌 등)는 당겨서 새로고침으로 보지 않는다.
+    if (this.bp.isMobile() && e.touches.length === 1 && main && main.scrollTop <= 0) {
+      this.pullStartY = e.touches[0].clientY;
     } else {
       this.pullStartY = null;
     }
   }
 
   protected onTouchMove(e: TouchEvent): void {
-    if (this.pullStartY === null) return;
-    const dy = (e.touches[0]?.clientY ?? 0) - this.pullStartY;
+    if (this.pullStartY === null || e.touches.length !== 1) return;
+    const dy = e.touches[0].clientY - this.pullStartY;
     // 아래로 당길 때만, 저항감을 주며 최대 80px.
     this.pull.set(dy > 0 ? Math.min(dy * 0.5, 80) : 0);
   }
 
   protected onTouchEnd(): void {
     if (this.pullStartY !== null && this.pull() > this.PULL_THRESHOLD) this.refresh();
+    this.pull.set(0);
+    this.pullStartY = null;
+  }
+
+  /** 시스템 인터럽트로 터치가 취소되면 당김 상태를 초기화한다. */
+  protected onTouchCancel(): void {
     this.pull.set(0);
     this.pullStartY = null;
   }

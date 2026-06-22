@@ -27,12 +27,11 @@ export class RatingRepository {
   liveRated(userId: string): Signal<RatedMovie[]> {
     return liveQuerySignal<RatedMovie[]>(async () => {
       const ratings = await db.ratings.where('userId').equals(userId).reverse().sortBy('ratedAt');
-      const rated: RatedMovie[] = [];
-      for (const r of ratings) {
-        const movie = await db.movies.get(r.movieId);
-        if (movie) rated.push({ movie, score: r.score });
-      }
-      return rated;
+      // bulkGet으로 한 번에 조회(평점 N건마다 get하는 N+1을 피한다).
+      const movies = await db.movies.bulkGet(ratings.map((r) => r.movieId));
+      return ratings
+        .map((r, i) => ({ movie: movies[i], score: r.score }))
+        .filter((x): x is RatedMovie => x.movie !== undefined);
     }, []);
   }
 
