@@ -15,7 +15,11 @@ export class AdaptiveSheetRef<R = unknown> {
   private cleanup?: () => void;
   private done = false;
 
-  constructor(private readonly overlayRef: OverlayRef) {}
+  /** 열릴 때 결정된 표현 모드. 콘텐츠가 시트/모달 스타일을 같은 기준으로 고르게 한다. */
+  constructor(
+    private readonly overlayRef: OverlayRef,
+    readonly isMobile: boolean,
+  ) {}
 
   /** @internal 서비스가 정리 콜백을 등록한다. */
   _setCleanup(fn: () => void): void {
@@ -66,7 +70,7 @@ export class AdaptiveSheetService {
       panelClass: 'outline-none',
     });
 
-    const ref = new AdaptiveSheetRef<R>(overlayRef);
+    const ref = new AdaptiveSheetRef<R>(overlayRef, isMobile);
 
     // 뒤로가기 닫기: CloseWatcher 우선, 없으면 라우터 이동 시 닫기로 폴백.
     const watcherCtor = (globalThis as { CloseWatcher?: new () => CloseWatcherLike }).CloseWatcher;

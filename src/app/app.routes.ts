@@ -14,6 +14,10 @@ export const routes: Routes = [
     loadComponent: () => import('@/pages/movie-detail/movie-detail-page'),
   },
   {
+    path: 'genre/:key',
+    loadComponent: () => import('@/pages/genre/genre'),
+  },
+  {
     path: 'search',
     loadComponent: () => import('@/pages/search/search'),
   },

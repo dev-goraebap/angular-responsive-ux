@@ -12,10 +12,14 @@ export interface RateMovieData {
   score: number;
 }
 
+/** 끌어서 닫기 임계값(px). */
+const DISMISS_THRESHOLD = 100;
+
 /**
  * 평점 입력 — 적응형 시트의 콘텐츠(ADR-0002).
- * 업무: 별점을 고르고 저장/지우기 한다. 자신이 바텀시트인지 모달인지 모른다(표현은 AdaptiveSheet가 결정).
- * 결과(점수, 지우면 0)를 닫힘으로 돌려줘 호출한 쪽이 상태를 갱신한다.
+ * 업무: 별점을 고르고 저장/지우기 한다. 시트/모달 분기는 AdaptiveSheetRef.isMobile 한 기준으로만
+ * 결정해, 오버레이 위치와 컴포넌트 폭이 어긋나지 않게 한다. 모바일에선 핸들을 끌어 내려 닫는다.
+ * 결과(점수, 지우면 0)를 닫힘으로 반환한다.
  */
 @Component({
   selector: 'rate-movie-sheet',
@@ -28,13 +32,22 @@ export interface RateMovieData {
       role="dialog"
       aria-modal="true"
       [attr.aria-label]="data.title + ' 평점'"
-      class="w-full rounded-t-2xl bg-popover p-5 text-popover-foreground shadow-lg outline-none
-             animate-in fade-in-0 slide-in-from-bottom-4
-             sm:w-[420px] sm:max-w-[90vw] sm:rounded-2xl sm:slide-in-from-bottom-0 sm:zoom-in-95"
+      [class]="containerClass"
+      [class.transition-transform]="!dragging()"
+      [style.transform]="dragY() ? 'translateY(' + dragY() + 'px)' : null"
       style="padding-bottom: max(1.25rem, env(safe-area-inset-bottom))"
     >
-      <!-- 모바일 그랩 핸들 -->
-      <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-muted sm:hidden" aria-hidden="true"></div>
+      @if (isMobile) {
+        <!-- 끌어서 닫기: 핸들 영역에서만 드래그를 시작한다(별점 탭과 충돌하지 않게) -->
+        <div
+          class="-mt-1 mb-3 cursor-grab touch-none py-2"
+          (touchstart)="onDragStart($event)"
+          (touchmove)="onDragMove($event)"
+          (touchend)="onDragEnd()"
+        >
+          <div class="mx-auto h-1 w-10 rounded-full bg-muted" aria-hidden="true"></div>
+        </div>
+      }
 
       <h2 class="text-lg font-semibold">평점 남기기</h2>
       <p class="mt-0.5 truncate text-sm text-muted-foreground">{{ data.title }}</p>
@@ -73,8 +86,42 @@ export class RateMovieSheet {
   private readonly auth = inject(AuthService);
   private readonly rating = inject(RatingRepository);
 
+  protected readonly isMobile = this.ref.isMobile;
   protected readonly stars = [1, 2, 3, 4, 5];
   protected readonly score = signal(this.data.score);
+
+  // 끌어서 닫기 상태.
+  protected readonly dragY = signal(0);
+  protected readonly dragging = signal(false);
+  private dragStartY: number | null = null;
+
+  protected get containerClass(): string {
+    const base = 'bg-popover p-5 text-popover-foreground shadow-lg outline-none animate-in fade-in-0';
+    return this.isMobile
+      ? `${base} w-full rounded-t-2xl slide-in-from-bottom-4`
+      : `${base} w-[420px] max-w-[90vw] rounded-2xl zoom-in-95`;
+  }
+
+  protected onDragStart(e: TouchEvent): void {
+    this.dragStartY = e.touches[0]?.clientY ?? null;
+    this.dragging.set(true);
+  }
+
+  protected onDragMove(e: TouchEvent): void {
+    if (this.dragStartY === null) return;
+    const dy = (e.touches[0]?.clientY ?? 0) - this.dragStartY;
+    this.dragY.set(dy > 0 ? dy : 0);
+  }
+
+  protected onDragEnd(): void {
+    this.dragging.set(false);
+    if (this.dragY() > DISMISS_THRESHOLD) {
+      this.ref.close();
+    } else {
+      this.dragY.set(0); // 임계값 미만이면 제자리로(transition-transform로 부드럽게)
+    }
+    this.dragStartY = null;
+  }
 
   protected async save(): Promise<void> {
     const uid = this.auth.userId();

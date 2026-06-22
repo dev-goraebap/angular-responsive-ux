@@ -9,7 +9,8 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { MovieRepository, type Movie } from '@/shared/api';
+import { RouterLink } from '@angular/router';
+import { GENRE_LABELS, MovieRepository, type Movie } from '@/shared/api';
 import { BreakpointService } from '@/shared/lib';
 import { MovieCard } from '@/entities/movie';
 import { OpenMovieService } from '@/features/open-movie';
@@ -26,7 +27,7 @@ const PAGE_SIZE = 12;
  */
 @Component({
   selector: 'page-home',
-  imports: [MovieCard, SearchBox],
+  imports: [MovieCard, SearchBox, RouterLink],
   host: {
     class: 'block',
     '(touchstart)': 'onTouchStart($event)',
@@ -52,6 +53,17 @@ const PAGE_SIZE = 12;
           </p>
         </div>
         <search-box class="lg:max-w-sm" />
+
+        <nav class="flex flex-wrap gap-2" aria-label="장르 바로가기">
+          @for (g of genres; track g[0]) {
+            <a
+              [routerLink]="['/genre', g[0]]"
+              class="rounded-full border border-border px-3 py-1 text-sm text-foreground transition-colors hover:bg-accent"
+            >
+              {{ g[1] }}
+            </a>
+          }
+        </nav>
       </header>
 
       @if (movies.featured().length) {
@@ -103,6 +115,7 @@ export default class Home implements OnDestroy {
   private readonly sentinel = viewChild<ElementRef<HTMLElement>>('sentinel');
 
   protected readonly PULL_THRESHOLD = 60;
+  protected readonly genres = Object.entries(GENRE_LABELS);
 
   protected readonly visibleCount = signal(this.state.visibleCount || PAGE_SIZE);
   protected readonly visibleMovies = computed(() => this.movies.all().slice(0, this.visibleCount()));

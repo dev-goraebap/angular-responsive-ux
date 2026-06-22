@@ -45,7 +45,7 @@ import { RateMovieSheet } from './rate-movie-sheet';
             </p>
             <div class="flex flex-wrap gap-1.5">
               @for (g of m.genres; track g) {
-                <span hlmBadge variant="secondary">{{ genreLabel(g) }}</span>
+                <button hlmBadge variant="secondary" (click)="goGenre(g)">{{ genreLabel(g) }}</button>
               }
             </div>
           </div>
@@ -142,6 +142,12 @@ export class MovieDetail {
 
   protected genreLabel(key: string): string {
     return GENRE_LABELS[key] ?? key;
+  }
+
+  /** 장르 배지 → 장르별 목록으로. 모달이면 먼저 닫는다. */
+  protected goGenre(key: string): void {
+    this.dialogRef?.close();
+    void this.router.navigate(['/genre', key]);
   }
 
   protected async toggleWishlist(m: Movie): Promise<void> {

@@ -58,7 +58,7 @@ interface NavItem {
               }
             }
           </span>
-          <span class="text-xs">{{ item.label }}</span>
+          <span class="text-xs whitespace-nowrap">{{ item.label }}</span>
         </a>
       }
 
@@ -72,7 +72,7 @@ interface NavItem {
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
             </svg>
           </span>
-          <span class="text-xs">로그아웃</span>
+          <span class="text-xs whitespace-nowrap">로그아웃</span>
         </button>
       } @else {
         <a routerLink="/login" routerLinkActive="text-primary" [class]="cellClass">
@@ -82,7 +82,7 @@ interface NavItem {
               <path d="M4 21a8 8 0 0 1 16 0" />
             </svg>
           </span>
-          <span class="text-xs">로그인</span>
+          <span class="text-xs whitespace-nowrap">로그인</span>
         </a>
       }
     </nav>
@@ -99,7 +99,7 @@ export class AppNav {
     if (this.auth.isAuthenticated()) {
       base.push(
         { path: '/wishlist', label: '위시리스트', exact: false, icon: 'heart' },
-        { path: '/me/ratings', label: '내 평점', exact: false, icon: 'star' },
+        { path: '/me/ratings', label: '평점', exact: false, icon: 'star' },
       );
     }
     base.push({ path: '/settings', label: '설정', exact: false, icon: 'gear' });
