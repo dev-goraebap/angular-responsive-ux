@@ -50,8 +50,13 @@ import { GENRE_LABELS, MovieRepository, type Movie } from '@/shared/api';
           <dd class="text-foreground">{{ m.cast.join(', ') }}</dd>
         </dl>
 
-        <div class="flex gap-2">
+        <div class="flex items-center gap-3">
           <button hlmBtn (click)="share(m)">공유</button>
+          @if (shareMessage()) {
+            <span class="text-sm text-muted-foreground" role="status" aria-live="polite">
+              {{ shareMessage() }}
+            </span>
+          }
         </div>
       </article>
     } @else if (!loading()) {
@@ -82,21 +87,62 @@ export class MovieDetail {
     });
   }
 
+  readonly shareMessage = signal('');
+
   protected genreLabel(key: string): string {
     return GENRE_LABELS[key] ?? key;
   }
 
-  /** 공유: 모바일은 네이티브 공유 시트, 없으면 링크 복사(ADR-0008). */
+  /**
+   * 공유(ADR-0008): 네이티브 공유 시트 → 링크 복사 순으로 폴백한다.
+   * 기술: Web Share·Clipboard API는 보안 컨텍스트(HTTPS/localhost)에서만 동작한다.
+   * LAN HTTP 등 비보안 환경에서는 레거시 execCommand로 복사하고, 항상 피드백을 남긴다.
+   */
   protected async share(m: Movie): Promise<void> {
     const url = `${location.origin}/movies/${m.id}`;
+
     if (navigator.share) {
       try {
         await navigator.share({ title: m.title, text: m.synopsis, url });
       } catch {
         // 사용자가 공유를 취소한 경우 — 무시한다.
       }
-    } else {
-      await navigator.clipboard?.writeText(url);
+      return;
     }
+
+    const copied = await this.copyToClipboard(url);
+    this.flash(copied ? '링크가 복사되었습니다' : '이 환경에서는 공유를 지원하지 않습니다');
+  }
+
+  private async copyToClipboard(text: string): Promise<boolean> {
+    // 보안 컨텍스트면 Clipboard API.
+    if (navigator.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch {
+        // 권한 거부 등 — 레거시로 폴백한다.
+      }
+    }
+    // 레거시 폴백: 비보안 컨텍스트에서도 동작한다.
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch {
+      return false;
+    }
+  }
+
+  private flash(message: string): void {
+    this.shareMessage.set(message);
+    setTimeout(() => this.shareMessage.set(''), 2500);
   }
 }
