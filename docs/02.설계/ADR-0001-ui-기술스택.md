@@ -69,8 +69,8 @@ spartan에 `dialog`/`sheet`가 있으나, 이 프로젝트의 핵심인 **화면
 
 ## 7. 후속 작업
 
-- [ ] spartan 초기화: `ng g @spartan-ng/cli:init` (components.json, Tailwind 프리셋 배선)
-- [ ] 기본 컴포넌트 add: `button`, `dialog`, `sheet`, `card`, `input`, `badge`, `avatar`, `skeleton`, `sonner`, `tabs` 등 — 페이지 설계 확정 후 목록 고정
-- [ ] Helm 테마 변수로 팔레트 정의(`ui-theme`), `DESIGN.md` 폐기
-- [ ] 공용 `AdaptiveDialog`/`AdaptiveSheet` 설계 ([ADR-0002](./ADR-0002-적응형-표현-전략.md))
-- [ ] 첫 시트 구현하며 GSAP 제스처 유틸 확정
+- [x] spartan 초기화: `ng g @spartan-ng/cli:init --theme=slate` (components.json, Tailwind 프리셋 배선)
+- [x] 기본 컴포넌트 add: button, dialog, sheet, card, input, label, badge, avatar, skeleton, spinner, sonner, separator, tabs (`src/shared/ui/helm`)
+- [x] 테마 일원화: Discord `@theme` 폐기 → spartan slate 테마(`:root`/`:root.dark`). `DESIGN.md` 삭제
+- [x] 공용 `AdaptiveSheet` 구현([ADR-0002](./ADR-0002-적응형-표현-전략.md)). `AdaptiveDialog` 별도 래퍼 대신 영화 상세는 `HlmDialogService`(route-based)
+- [ ] 제스처: 끌어서 닫기는 현재 직접 touch 핸들러로 구현. 복잡해지면 GSAP 유틸로 이관(미정)

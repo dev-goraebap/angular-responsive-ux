@@ -12,10 +12,11 @@ SSR은 다루지 않습니다(자매 프로젝트 `angular-ssr-design`의 주제
 - **적응형 표현**: 영화 상세가 데스크톱에서는 모달, 모바일에서는 풀스크린 페이지로 갈립니다.
   평점 입력은 데스크톱 모달 ↔ 모바일 바텀시트. 콘텐츠는 한 번만 작성하고 표현만 스왑합니다.
 - **뒤로가기로 닫기**: 오버레이가 떠 있을 때 뒤로가기 한 번이면 닫힙니다(CloseWatcher + history fallback).
-- **적응형 내비**: 하단 탭바(모바일)와 사이드/상단(데스크톱).
-- **제스처**: 끌어서 닫기와 스와이프(속도까지 보는 판정), safe-area(`viewport-fit=cover`).
-- **목록 UX**: 무한 스크롤 + 가상 스크롤, 스크롤 위치 복원, pull-to-refresh.
-- **공유**: 모바일 네이티브 공유 시트(`navigator.share`) + 데스크톱 링크 복사.
+- **적응형 검색**: 데스크톱은 인라인 입력 + 결과 드롭다운, 모바일은 풀스크린 검색 페이지.
+- **적응형 내비**: 하단 탭바(모바일)와 사이드/상단(데스크톱), safe-area(`viewport-fit=cover`).
+- **목록 UX**: 무한 스크롤(+ "더 보기" 폴백·`aria-live`), 스크롤 위치 복원, 당겨서 새로고침.
+- **회원 흐름**: 데모 로그인 + 가드(로그인 후 복귀), 위시리스트, 별점.
+- **공유**: 모바일 네이티브 공유 시트(`navigator.share`) + 데스크톱 링크 복사(보안 컨텍스트 아니면 레거시 복사).
 
 ## 외형은 소유, 동작은 차용
 
@@ -28,13 +29,14 @@ Angular CDK 위의 헤드리스 프리미티브)에서 차용하고, 외형은 *
 Tailwind로 스타일링된 컴포넌트)을 프로젝트로 복사해 소유·수정합니다. raw CDK 위에 프리미티브를
 매번 손으로 짜는 수고를 덜면서도, 마크업이 light DOM에 남아 Tailwind가 모든 요소에 닿습니다.
 
-적응형 분기·끌어서 닫기·뒤로가기 닫기는 spartan이 기본 제공하지 않으므로, 그 위에 도메인을
-모르는 공용 컴포넌트(`AdaptiveDialog`/`AdaptiveSheet`)로 우리가 얹습니다. 쓰는 쪽은 분기를
-알 필요가 없습니다.
+적응형 분기·끌어서 닫기·뒤로가기 닫기는 spartan이 기본 제공하지 않으므로 그 위에 우리가
+얹습니다 — 평점 같은 임시 오버레이는 공용 `AdaptiveSheet`(바텀시트 ↔ 모달)로, 영화 상세는
+URL과 묶인 라우트 기반 모달로. 쓰는 쪽은 분기를 알 필요가 없습니다. CDK는 사라진 게 아니라
+Brain의 토대로 남아 있고, 우리가 직접 쓰는 곳은 이 적응형 시트(CDK Overlay)뿐입니다.
 
 ## 스택
 
-Angular 22 · spartan/ui (Brain + Helm) · Tailwind v4 · GSAP · Dexie(IndexedDB). CSR PWA.
+Angular 22 · spartan/ui (Brain + Helm) · Tailwind v4 · Dexie(IndexedDB). 렌더링은 CSR.
 
 ## 빠른 시작
 
@@ -44,8 +46,8 @@ npm start
 # http://localhost:4200
 ```
 
-창 폭을 1024px 경계로 넓혔다 줄이면 상세(모달 ↔ 페이지)와 내비(사이드 ↔ 탭바)가
-전환되는 것을 볼 수 있습니다.
+창 폭을 모바일(좁게)과 데스크톱(넓게)으로 오가면 상세(페이지 ↔ 모달)·평점(바텀시트 ↔ 모달)·
+검색(풀스크린 ↔ 드롭다운)·내비(탭바 ↔ 사이드)가 전환되는 것을 볼 수 있습니다.
 
 ### 같은 WiFi에서 모바일로 보기
 
@@ -70,14 +72,18 @@ npm test         # 단위 테스트 (Vitest)
 
 ```
 src/
-  app/        # 부트스트랩, 셸, 라우팅, 프로바이더
-  pages/      # 라우트 화면 (home, movies, movie-detail, search, wishlist, my-ratings, login)
-  widgets/    # 여러 페이지가 쓰는 블록 (app-nav)
+  app/        # 부트스트랩, 셸, 라우팅(:id·q·:key 입력 바인딩), 프로바이더
+  pages/      # home · movie-detail · genre · search · login · wishlist · my-ratings · settings
+  widgets/    # app-nav(적응형 네비) · search-box(적응형 검색 입구)
+  features/   # open-movie(적응형 상세 열기)
+  entities/   # movie(카드 · 상세 · 평점 시트)
   shared/
-    ui/       # spartan Helm + 공용 AdaptiveDialog/AdaptiveSheet, 오버레이 닫기 디렉티브
-    lib/      # breakpoint, theme, gsap, liveQuery/localStorage 브리지
-    api/      # Dexie DB, movie/wishlist/rating repository
-  styles.css  # Helm 프리셋 + 테마 변수
+    ui/helm/           # spartan Helm 컴포넌트(복사 소유)
+    ui/adaptive-sheet/ # AdaptiveSheetService(바텀시트 ↔ 모달)
+    auth/              # AuthService, authGuard
+    api/               # Dexie DB·seed, movie/wishlist/rating repository
+    lib/               # breakpoint, theme, live-query, local-storage, nav-exit
+  styles.css  # Helm 프리셋 + spartan 테마 변수
 ```
 
 의존은 아래 방향으로만 흐릅니다(app → pages → widgets → features → entities → shared).
