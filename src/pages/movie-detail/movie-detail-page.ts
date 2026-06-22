@@ -11,9 +11,9 @@ import { MovieDetail } from '@/entities/movie';
 @Component({
   selector: 'page-movie-detail',
   imports: [MovieDetail, HlmButton],
-  host: { class: 'block h-full' },
+  host: { class: 'block' },
   template: `
-    <div class="flex h-full flex-col overflow-y-auto">
+    <div class="flex flex-col">
       <header
         class="sticky top-0 z-10 flex items-center border-b border-border bg-background/80 px-4 py-3 backdrop-blur"
       >

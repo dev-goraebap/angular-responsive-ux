@@ -14,9 +14,10 @@ import { ThemeService } from '@/shared/lib';
   template: `
     <div class="flex h-dvh flex-col-reverse lg:flex-row">
       <app-nav class="shrink-0" />
-      <main class="min-h-0 min-w-0 flex-1 overflow-hidden">
-        <!-- 콘텐츠를 가운데 최대폭 컬럼으로 모은다. 모바일은 풀폭, 데스크톱은 가운데 정렬. -->
-        <div class="relative mx-auto h-full w-full max-w-5xl">
+      <!-- 스크롤은 전체 폭의 main이 맡는다 → 스크롤바가 창 오른쪽 끝에 생긴다.
+           콘텐츠는 안쪽에서 가운데 최대폭 컬럼으로 모은다(모바일 풀폭, 데스크톱 가운데). -->
+      <main class="min-h-0 min-w-0 flex-1 overflow-y-auto">
+        <div class="relative mx-auto w-full max-w-5xl">
           <router-outlet />
         </div>
       </main>

@@ -11,7 +11,7 @@ import { OpenMovieService } from '@/features/open-movie';
 @Component({
   selector: 'page-home',
   imports: [MovieCard],
-  host: { class: 'block h-full overflow-y-auto' },
+  host: { class: 'block' },
   template: `
     <div class="flex flex-col gap-10 px-5 py-6">
       <header>

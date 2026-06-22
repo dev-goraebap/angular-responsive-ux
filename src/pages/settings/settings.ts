@@ -7,9 +7,9 @@ import { ThemeService } from '@/shared/lib';
  */
 @Component({
   selector: 'page-settings',
-  host: { class: 'block h-full' },
+  host: { class: 'block' },
   template: `
-    <div class="flex h-full flex-col">
+    <div class="flex flex-col">
       <header class="px-5 pt-6 pb-4">
         <h1 class="text-3xl font-bold text-foreground">설정</h1>
       </header>
