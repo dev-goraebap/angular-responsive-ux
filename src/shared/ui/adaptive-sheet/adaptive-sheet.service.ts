@@ -57,15 +57,16 @@ export class AdaptiveSheetService {
 
   open<R = unknown>(component: ComponentType<unknown>, data?: unknown): AdaptiveSheetRef<R> {
     const isMobile = this.bp.isMobile();
+    // 기술: 전폭 바텀시트는 포지션 전략에 width('100%')를 직접 줘야 안정적이다
+    // (CDK Global 포지션에서 config.width는 적용이 어긋날 수 있다). 데스크톱은 콘텐츠 폭에 맡긴다.
     const positionStrategy = isMobile
-      ? this.overlay.position().global().bottom('0').left('0')
+      ? this.overlay.position().global().bottom('0').left('0').width('100%')
       : this.overlay.position().global().centerHorizontally().centerVertically();
 
     const overlayRef = this.overlay.create({
       hasBackdrop: true,
       scrollStrategy: this.overlay.scrollStrategies.block(),
       positionStrategy,
-      width: isMobile ? '100%' : undefined,
       maxHeight: '90vh',
       panelClass: 'outline-none',
     });
