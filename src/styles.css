@@ -1,3 +1,9 @@
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css';
+
+@import '@spartan-ng/brain/hlm-tailwind-preset.css';
 /* 글로벌 스타일 — 디자인 토큰과 기본 바탕을 정의합니다. */
 
 /* 폰트 (self-host via Fontsource). ABC Ginto Nord·ggsans는 독점이므로 대체합니다. */
@@ -5,17 +11,17 @@
 @import '@fontsource-variable/inter';
 
 /* Tailwind */
-@import 'tailwindcss';
 
 /* CDK 오버레이 기본 스타일 (바텀시트·모달·드롭다운의 위치·백드롭) */
 @import '@angular/cdk/overlay-prebuilt.css';
 
 /* CDK 접근성 스타일 — .cdk-visually-hidden 정의.
-   LiveAnnouncer(스크린리더 알림 영역)를 화면에서 감춘다. 없으면 알림 텍스트가 그대로 보인다. */
+LiveAnnouncer(스크린리더 알림 영역)를 화면에서 감춘다. 없으면 알림 텍스트가 그대로 보인다. */
 @import '@angular/cdk/a11y-prebuilt.css';
 
-/* ─── 디자인 토큰 (출처: DESIGN.md — Discord) ───
-   클래스가 아니라 토큰을 노출합니다. 컴포넌트는 이 토큰을 참조합니다. */
+/* ─── 디자인 토큰 (Discord 디자인 언어 기반) ───
+클래스가 아니라 토큰을 노출합니다. 컴포넌트는 이 토큰을 참조합니다.
+spartan 채택에 따라 이 토큰은 점진적으로 Helm 테마(hlm-tailwind-preset + CSS 변수)로 이전합니다. */
 @theme {
   /* 색 */
   --color-primary: #5865f2; /* Blurple — 기본 행동 */
@@ -51,7 +57,7 @@
   --spacing-xxl: 32px;
   --spacing-section: 40px;
 
-  /* 브레이크포인트 (DESIGN.md 사다리) */
+  /* 브레이크포인트 사다리 */
   --breakpoint-tablet: 768px;
   --breakpoint-laptop: 1024px;
   --breakpoint-desktop: 1280px;
@@ -67,8 +73,8 @@
 }
 
 /* 라이트 테마 — 폴라리티 플립(밝은 면 + 어두운 글자). 같은 토큰 이름의 값만 스왑하므로
-   유틸리티(bg-canvas·text-ink…)는 그대로 두고 색만 따라 바뀝니다. 브랜드 색(primary·green·
-   magenta·link)과 ink-dark(밝은 면 위 어두운 글자)는 유지합니다. */
+유틸리티(bg-canvas·text-ink…)는 그대로 두고 색만 따라 바뀝니다. 브랜드 색(primary·green·
+magenta·link)과 ink-dark(밝은 면 위 어두운 글자)는 유지합니다. */
 [data-theme='light'] {
   color-scheme: light;
   --color-canvas: #f2f3f5;
@@ -90,4 +96,80 @@ body {
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
+}
+
+:root {
+  color-scheme: light;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.129 0.042 264.695);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.129 0.042 264.695);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.129 0.042 264.695);
+  --primary: oklch(0.208 0.042 265.755);
+  --primary-foreground: oklch(0.984 0.003 247.858);
+  --secondary: oklch(0.968 0.007 247.896);
+  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --muted: oklch(0.968 0.007 247.896);
+  --muted-foreground: oklch(0.554 0.046 257.417);
+  --accent: oklch(0.968 0.007 247.896);
+  --accent-foreground: oklch(0.208 0.042 265.755);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.929 0.013 255.508);
+  --input: oklch(0.929 0.013 255.508);
+  --ring: oklch(0.704 0.04 256.788);
+  --sidebar: oklch(0.984 0.003 247.858);
+  --sidebar-foreground: oklch(0.129 0.042 264.695);
+  --sidebar-primary: oklch(0.208 0.042 265.755);
+  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-accent: oklch(0.968 0.007 247.896);
+  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
+  --sidebar-border: oklch(0.929 0.013 255.508);
+  --sidebar-ring: oklch(0.704 0.04 256.788);
+}
+
+:root.dark {
+  color-scheme: dark;
+
+  --background: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.984 0.003 247.858);
+  --card: oklch(0.208 0.042 265.755);
+  --card-foreground: oklch(0.984 0.003 247.858);
+  --popover: oklch(0.208 0.042 265.755);
+  --popover-foreground: oklch(0.984 0.003 247.858);
+  --primary: oklch(0.929 0.013 255.508);
+  --primary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.279 0.041 260.031);
+  --secondary-foreground: oklch(0.984 0.003 247.858);
+  --muted: oklch(0.279 0.041 260.031);
+  --muted-foreground: oklch(0.704 0.04 256.788);
+  --accent: oklch(0.279 0.041 260.031);
+  --accent-foreground: oklch(0.984 0.003 247.858);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --sidebar: oklch(0.208 0.042 265.755);
+  --sidebar-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-primary: oklch(0.984 0.003 247.858);
+  --sidebar-primary-foreground: oklch(0.208 0.042 265.755);
+  --sidebar-accent: oklch(0.279 0.041 260.031);
+  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

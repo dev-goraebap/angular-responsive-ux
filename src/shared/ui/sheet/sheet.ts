@@ -87,7 +87,7 @@ export class Sheet {
   private draggable?: Draggable;
   private previouslyFocused: HTMLElement | null = null;
 
-  // Tailwind 클래스는 구현 디테일이므로 노출하지 않는다. 깊이는 그림자보다 색·라운드로(DESIGN.md),
+  // Tailwind 클래스는 구현 디테일이므로 노출하지 않는다. 깊이는 그림자보다 색·라운드로,
   // 떠 있는 표면에만 단일 violet glow를 쓴다.
   protected readonly panelClasses = computed(() => {
     const base =

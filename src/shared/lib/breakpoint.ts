@@ -5,7 +5,7 @@ import { map } from 'rxjs';
 
 /**
  * 화면 크기를 시그널로 노출합니다.
- * 업무: 모바일/데스크톱 적응형 분기의 단일 기준점입니다. DESIGN.md 사다리의 tablet(768px)을 경계로 삼습니다.
+ * 업무: 모바일/데스크톱 적응형 분기의 단일 기준점입니다. tablet(768px)을 경계로 삼습니다.
  */
 @Service()
 export class BreakpointService {

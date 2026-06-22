@@ -11,7 +11,7 @@ interface NavItem {
 /**
  * 앱 내비게이션 — 두 번째 헤드라인 적응형 패턴.
  * 업무: 같은 항목을 모바일에선 하단 탭바, 데스크톱(laptop+)에선 좌측 사이드 레일로 보여 준다.
- * 레이아웃 방향만 바뀌므로 유틸리티 반응형(laptop: 접두)으로 처리한다. 활성 탭은 primary(DESIGN.md).
+ * 레이아웃 방향만 바뀌므로 유틸리티 반응형(laptop: 접두)으로 처리한다. 활성 탭은 primary.
  */
 @Component({
   selector: 'app-nav',
@@ -71,7 +71,7 @@ interface NavItem {
 })
 export class AppNav {
   protected readonly items: NavItem[] = [
-    { path: '/', label: '할 일', exact: true, icon: 'list' },
+    { path: '/', label: '홈', exact: true, icon: 'list' },
     { path: '/settings', label: '설정', exact: false, icon: 'gear' },
   ];
 }

@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 
-/** 버튼 강조 단계. cta는 화면당 최고 강조 한 곳에만 쓴다(업무 규칙, DESIGN.md). */
+/** 버튼 강조 단계. cta는 화면당 최고 강조 한 곳에만 쓴다(업무 규칙). */
 export type ButtonVariant = 'primary' | 'cta' | 'ghost';
 
 /**

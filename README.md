@@ -1,64 +1,40 @@
-# 모바일 웹 UX 디자인
+# 반응형 웹 UX 전략 (영화 카탈로그 데모)
 
-반응형 웹앱을 모바일에서도 앱처럼 느끼게 만드는 설계 방법을 정리한 프로젝트입니다.
-바텀시트, 제스처, safe-area, 적응형 내비, 다크/라이트 테마 같은 패턴을 어떻게 설계하고
-어디에 책임을 두는지를 다룹니다.
+하나의 코드베이스로 데스크톱 웹과 모바일 웹에서 각각 그 환경에 맞는, 앱에 가까운 경험을
+어떻게 제공할지를 다루는 데모입니다. 무대는 영화 카탈로그이고, 렌더링은 CSR입니다.
+SSR은 다루지 않습니다(자매 프로젝트 `angular-ssr-design`의 주제).
 
-핵심은 특정 프레임워크가 아니라 설계 방법입니다. 그 방법을 눈으로 확인할 수 있도록
-**데모 코드는 Angular로 구현**했습니다. 같은 원칙은 React나 Svelte로도 옮겨집니다.
+핵심 질문은 하나입니다 — 같은 화면이라도 사용자가 기대하는 동작은 환경마다 다른데, 그 차이를
+어디에 어떻게 책임지게 둘 것인가. 자세한 배경과 결정은 [docs/](docs/)에 정리되어 있습니다.
 
 ## 무엇을 보여 주나
 
-- 적응형 시트: 같은 컨텐츠가 모바일 바텀시트와 데스크톱 모달로 갈립니다. 끌어서 닫기 제스처 포함
-- 적응형 내비: 하단 탭바(모바일)와 사이드 레일(데스크톱)
-- 제스처: 끌어서 닫기와 스와이프, 속도까지 보는 판정
-- safe-area: 노치 기기의 inset 존중 (`viewport-fit=cover`)
-- 다크/라이트 테마: 토큰 스왑, 선택 영속화
-- 가상 스크롤: 긴 목록도 끊김 없이 (CDK)
+- **적응형 표현**: 영화 상세가 데스크톱에서는 모달, 모바일에서는 풀스크린 페이지로 갈립니다.
+  평점 입력은 데스크톱 모달 ↔ 모바일 바텀시트. 콘텐츠는 한 번만 작성하고 표현만 스왑합니다.
+- **뒤로가기로 닫기**: 오버레이가 떠 있을 때 뒤로가기 한 번이면 닫힙니다(CloseWatcher + history fallback).
+- **적응형 내비**: 하단 탭바(모바일)와 사이드/상단(데스크톱).
+- **제스처**: 끌어서 닫기와 스와이프(속도까지 보는 판정), safe-area(`viewport-fit=cover`).
+- **목록 UX**: 무한 스크롤 + 가상 스크롤, 스크롤 위치 복원, pull-to-refresh.
+- **공유**: 모바일 네이티브 공유 시트(`navigator.share`) + 데스크톱 링크 복사.
 
-## 갈림길: 라이브러리에 맡길까, 소유할까
+## 외형은 소유, 동작은 차용
 
 반응형 웹앱의 모바일 UX를 챙기는 가장 쉬운 길은 Ionic이나 Angular Material 같은 완성형
-프레임워크를 쓰는 것입니다. 스타일과 동작, 접근성을 한꺼번에 주어 빠르게 출발하게 합니다.
-대가는 제어권입니다. 컴포넌트가 마크업을 캡슐화할수록 바깥의 스타일이 안쪽까지 닿지 못하고,
-디자인의 상당 부분을 프레임워크의 언어에 위임하게 됩니다.
+프레임워크입니다. 빠르게 출발하는 대신 제어권을 내줍니다. 컴포넌트가 마크업을 캡슐화할수록
+바깥 스타일이 안쪽까지 닿지 못하고, 디자인의 상당 부분을 프레임워크의 언어에 위임하게 됩니다.
 
-이 프로젝트는 제어권을 택했습니다. 디자인 시스템의 소유권을 가지면서도, 헤드리스 프리미티브를
-처음부터 짜지는 않습니다. 포커스 트랩 같은 동작은 Angular CDK에서 차용하고, 그 위에 배선과
-스타일만 얹습니다. CDK는 헤드리스 프리미티브이기 때문에 마크업을 우리 light DOM에 남기고,
-그래서 Tailwind가 모든 요소에 닿습니다. 디자인 자유도와 검증된 동작, 접근성을 동시에 얻기 위한
-조합입니다.
+이 프로젝트는 **spartan/ui**를 택했습니다. 동작과 접근성은 **Brain**(`@spartan-ng/brain`,
+Angular CDK 위의 헤드리스 프리미티브)에서 차용하고, 외형은 **Helm**(`@spartan-ng/helm`,
+Tailwind로 스타일링된 컴포넌트)을 프로젝트로 복사해 소유·수정합니다. raw CDK 위에 프리미티브를
+매번 손으로 짜는 수고를 덜면서도, 마크업이 light DOM에 남아 Tailwind가 모든 요소에 닿습니다.
 
-## 아키텍처
-
-소유하기로 했다면 우리가 만드는 것은 도메인을 모르는 공용 컴포넌트뿐이고, 그 컴포넌트가
-헤드리스 동작과 모바일 UX를 안에 품습니다.
-
-```mermaid
-flowchart TB
-  subgraph DS["디자인 시스템 · 우리가 소유하는 공용 컴포넌트"]
-    direction TB
-    HP["헤드리스 프리미티브 · 동작과 접근성 (검증된 라이브러리 차용)"]
-    MUX["모바일 UX · 적응형, safe-area, 제스처"]
-  end
-```
-
-시트를 보면 분명합니다. 시트는 바깥으로 열림 상태와 내용만 받고, 화면이 좁으면 바텀시트로
-넓으면 모달로 갈리는 판단도 포커스를 가두고 닫는 동작도 전부 컴포넌트 안에 있습니다. 쓰는 쪽은
-그 분기를 알 필요가 없습니다. 무엇을 얼마나 품는지는 컴포넌트마다 다르고(버튼은 거의 품지 않고
-시트는 많이 품습니다), 도메인을 아는 화면은 이 공용 컴포넌트를 조합해 만들 뿐입니다.
-
-> 자세한 설계 결정과 근거는 [docs/](docs/)에, 설계 방법 자체는 스킬
-> [skills/mobile-web-ux-design/](skills/mobile-web-ux-design/SKILL.md)에 정리되어 있습니다.
+적응형 분기·끌어서 닫기·뒤로가기 닫기는 spartan이 기본 제공하지 않으므로, 그 위에 도메인을
+모르는 공용 컴포넌트(`AdaptiveDialog`/`AdaptiveSheet`)로 우리가 얹습니다. 쓰는 쪽은 분기를
+알 필요가 없습니다.
 
 ## 스택
 
-Angular 22, Angular CDK, Tailwind v4, GSAP, Dexie(IndexedDB).
-
-## 요구사항
-
-- Node 22 이상 (Angular 22 기준)
-- npm
+Angular 22 · spartan/ui (Brain + Helm) · Tailwind v4 · GSAP · Dexie(IndexedDB). CSR PWA.
 
 ## 빠른 시작
 
@@ -68,34 +44,19 @@ npm start
 # http://localhost:4200
 ```
 
-## 데스크톱에서 보기
+창 폭을 1024px 경계로 넓혔다 줄이면 상세(모달 ↔ 페이지)와 내비(사이드 ↔ 탭바)가
+전환되는 것을 볼 수 있습니다.
 
-`npm start` 후 브라우저에서 `http://localhost:4200`을 엽니다. 창 폭을 1024px 경계로 넓혔다 줄이면
-시트(모달과 바텀시트)와 내비(레일과 탭바)가 전환되는 것을 볼 수 있습니다.
-
-## 같은 WiFi에서 모바일로 보기
-
-개발 서버를 LAN에 노출합니다.
+### 같은 WiFi에서 모바일로 보기
 
 ```bash
 npm start -- --host 0.0.0.0
+# PC의 WiFi IPv4 주소 확인 후 폰에서 http://<그-IP>:4200
+# Windows: ipconfig / macOS: ipconfig getifaddr en0 / Linux: hostname -I
 ```
 
-PC의 WiFi IPv4 주소를 확인합니다.
-
-```bash
-# Windows: "무선 LAN 어댑터 Wi-Fi"의 IPv4 주소
-ipconfig
-# macOS
-ipconfig getifaddr en0
-# Linux
-hostname -I
-```
-
-폰을 같은 WiFi에 두고 `http://<그-IP>:4200`을 엽니다 (예: `http://192.168.0.10:4200`).
-실제 터치 환경이라 끌어서 닫기나 스와이프 같은 제스처를 제대로 확인하기 좋습니다.
-
-> 안 열리면 방화벽이 Node를 막는 경우가 많습니다. 실행 시 뜨는 허용 창에서 개인 네트워크를 허용하세요(Windows).
+실제 터치 환경이라 끌어서 닫기·스와이프·공유 시트를 제대로 확인하기 좋습니다.
+(안 열리면 방화벽이 Node를 막는 경우가 많습니다 — 개인 네트워크 허용.)
 
 ## 명령어
 
@@ -110,18 +71,18 @@ npm test         # 단위 테스트 (Vitest)
 ```
 src/
   app/        # 부트스트랩, 셸, 라우팅, 프로바이더
-  pages/      # 라우트 화면 (home, settings)
+  pages/      # 라우트 화면 (home, movies, movie-detail, search, wishlist, my-ratings, login)
   widgets/    # 여러 페이지가 쓰는 블록 (app-nav)
   shared/
-    ui/       # 디자인 시스템 프리미티브 (Button, Sheet, ListItem, Snackbar, Checkbox)
+    ui/       # spartan Helm + 공용 AdaptiveDialog/AdaptiveSheet, 오버레이 닫기 디렉티브
     lib/      # breakpoint, theme, gsap, liveQuery/localStorage 브리지
-    api/      # Dexie DB, TodoStore
-  styles.css  # @theme 토큰 + [data-theme=light] 스왑
+    api/      # Dexie DB, movie/wishlist/rating repository
+  styles.css  # Helm 프리셋 + 테마 변수
 ```
 
-의존은 아래 방향으로만 흐릅니다(app → pages → widgets → shared).
+의존은 아래 방향으로만 흐릅니다(app → pages → widgets → features → entities → shared).
 
-## 문서와 스킬
+## 문서
 
-- [docs/](docs/): 기획, 설계, 구현 문서
-- [skills/mobile-web-ux-design/](skills/mobile-web-ux-design/SKILL.md): 설계 방법을 다른 프로젝트에서 재사용할 수 있는 에이전트 스킬
+- [docs/01.기획/](docs/01.기획/): 프로젝트 브리프 + 리서치(기술 스택, 모바일 인터랙션, 데이터 저장)
+- [docs/02.설계/](docs/02.설계/): 기술·UX 결정을 담은 ADR 모음(`README.md`가 인덱스)
