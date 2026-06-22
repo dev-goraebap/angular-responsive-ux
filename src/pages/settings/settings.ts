@@ -10,24 +10,26 @@ import { ThemeService } from '@/shared/lib';
   host: { class: 'block h-full' },
   template: `
     <div class="flex h-full flex-col">
-      <header class="px-lg pt-xl pb-md">
-        <h1 class="font-display text-3xl font-bold text-ink">설정</h1>
+      <header class="px-5 pt-6 pb-4">
+        <h1 class="text-3xl font-bold text-foreground">설정</h1>
       </header>
 
-      <div class="flex flex-col gap-md px-lg">
-        <div class="flex items-center justify-between rounded-md bg-surface-indigo px-md py-md">
-          <label id="dark-mode-label" class="text-ink">다크 모드</label>
+      <div class="flex flex-col gap-4 px-5">
+        <div
+          class="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-4"
+        >
+          <label id="dark-mode-label" class="text-card-foreground">다크 모드</label>
           <button
             type="button"
             role="switch"
             [attr.aria-checked]="isDark()"
             aria-labelledby="dark-mode-label"
             (click)="theme.toggle()"
-            class="relative h-7 w-12 shrink-0 rounded-pill transition-colors"
-            [class]="isDark() ? 'bg-primary' : 'bg-muted'"
+            class="relative h-7 w-12 shrink-0 rounded-full transition-colors"
+            [class]="isDark() ? 'bg-primary' : 'bg-input'"
           >
             <span
-              class="absolute top-1 size-5 rounded-pill bg-ink transition-all"
+              class="absolute top-1 size-5 rounded-full bg-background shadow transition-all"
               [class]="isDark() ? 'left-6' : 'left-1'"
             ></span>
           </button>

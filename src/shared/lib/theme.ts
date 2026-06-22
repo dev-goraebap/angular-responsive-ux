@@ -5,8 +5,8 @@ export type Theme = 'dark' | 'light';
 
 /**
  * 테마 전환.
- * 업무: 다크(기본)와 라이트를 토큰 스왑으로 오간다. 선택은 localStorage에 남고,
- * `<html data-theme>`에 반영돼 CSS 변수가 따라 바뀐다. UI 인프라일 뿐 업무 규칙은 없다.
+ * 업무: 다크(기본)와 라이트를 오간다. 선택은 localStorage에 남고, `<html>`의 `.dark` 클래스로
+ * 반영돼 spartan 테마 변수(:root / :root.dark)가 따라 바뀐다. UI 인프라일 뿐 업무 규칙은 없다.
  */
 @Service()
 export class ThemeService {
@@ -15,9 +15,9 @@ export class ThemeService {
   readonly theme = localStorageSignal<Theme>('theme', 'dark');
 
   constructor() {
-    // 선택을 문서 루트에 반영한다. 저장된 값이 있으면 시작 시 그대로 적용된다.
+    // 기술: spartan은 :root.dark로 다크를 정의하므로 문서 루트에 .dark 클래스를 토글한다.
     effect(() => {
-      this.doc.documentElement.setAttribute('data-theme', this.theme());
+      this.doc.documentElement.classList.toggle('dark', this.theme() === 'dark');
     });
   }
 

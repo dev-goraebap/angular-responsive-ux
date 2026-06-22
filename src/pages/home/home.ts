@@ -1,57 +1,42 @@
 import { Component, inject } from '@angular/core';
 import { MovieRepository, type Movie } from '@/shared/api';
+import { MovieCard } from '@/entities/movie';
+import { OpenMovieService } from '@/features/open-movie';
 
 /**
- * 홈 — 추천 영화와 전체 카탈로그.
- * 업무: 영화 데이터 계층(MovieRepository)을 검증하는 첫 화면이다.
- * 적응형 상세(데스크톱 모달 / 모바일 페이지)는 다음 단계에서 얹는다(ADR-0002).
+ * 홈 — 영화 카탈로그(추천 + 전체).
+ * 업무: 목록에서 영화를 누르면 상세를 연다. 데스크톱은 모달, 모바일은 페이지로 갈리지만
+ * 이 화면은 그 분기를 모르고 OpenMovieService에 위임한다(ADR-0002).
  */
 @Component({
   selector: 'page-home',
+  imports: [MovieCard],
   host: { class: 'block h-full overflow-y-auto' },
   template: `
-    <div class="flex flex-col gap-section px-lg py-xl">
+    <div class="flex flex-col gap-10 px-5 py-6">
       <header>
-        <h1 class="font-display text-3xl font-bold text-ink">영화 카탈로그</h1>
-        <p class="mt-xxs text-ink/70">반응형 UX 전략 데모 — 데스크톱과 모바일에서 다르게 동작합니다.</p>
+        <h1 class="text-3xl font-bold text-foreground">영화 카탈로그</h1>
+        <p class="mt-1 text-muted-foreground">
+          데스크톱은 모달로, 모바일은 페이지로 — 같은 영화를 환경에 맞게 엽니다.
+        </p>
       </header>
 
-      @if (movies.featured().length > 0) {
+      @if (movies.featured().length) {
         <section>
-          <h2 class="mb-md font-display text-xl font-semibold text-ink">추천</h2>
-          <div class="flex gap-md overflow-x-auto pb-xs">
-            @for (movie of movies.featured(); track movie.id) {
-              <article class="w-40 shrink-0">
-                <div
-                  class="flex aspect-2/3 items-end rounded-md p-md"
-                  [style.background-color]="movie.posterColor"
-                >
-                  <span class="font-display text-lg font-bold text-white drop-shadow">
-                    {{ movie.title }}
-                  </span>
-                </div>
-                <p class="mt-xs truncate text-sm text-ink">{{ movie.title }}</p>
-                <p class="text-xs text-ink/60">{{ movie.year }} · ★ {{ movie.ratingAverage }}</p>
-              </article>
+          <h2 class="mb-3 text-xl font-semibold text-foreground">추천</h2>
+          <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            @for (m of movies.featured(); track m.id) {
+              <movie-card [movie]="m" (open)="openMovie($event)" />
             }
           </div>
         </section>
       }
 
       <section>
-        <h2 class="mb-md font-display text-xl font-semibold text-ink">전체</h2>
-        <div class="grid grid-cols-2 gap-md tablet:grid-cols-3 laptop:grid-cols-4">
-          @for (movie of movies.all(); track movie.id) {
-            <article>
-              <div
-                class="flex aspect-2/3 items-end rounded-md p-md"
-                [style.background-color]="movie.posterColor"
-              >
-                <span class="font-display font-bold text-white drop-shadow">{{ movie.title }}</span>
-              </div>
-              <p class="mt-xs truncate text-sm text-ink">{{ movie.title }}</p>
-              <p class="text-xs text-ink/60">{{ genreLabels(movie) }}</p>
-            </article>
+        <h2 class="mb-3 text-xl font-semibold text-foreground">전체</h2>
+        <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          @for (m of movies.all(); track m.id) {
+            <movie-card [movie]="m" (open)="openMovie($event)" />
           }
         </div>
       </section>
@@ -60,8 +45,9 @@ import { MovieRepository, type Movie } from '@/shared/api';
 })
 export default class Home {
   protected readonly movies = inject(MovieRepository);
+  private readonly opener = inject(OpenMovieService);
 
-  protected genreLabels(movie: Movie): string {
-    return `${movie.year} · ${movie.genres.join(', ')}`;
+  protected openMovie(movie: Movie): void {
+    this.opener.open(movie.id);
   }
 }

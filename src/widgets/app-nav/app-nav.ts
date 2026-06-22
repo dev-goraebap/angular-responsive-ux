@@ -19,8 +19,8 @@ interface NavItem {
   host: { class: 'block' },
   template: `
     <nav
-      class="flex justify-around border-t border-hairline bg-canvas
-             laptop:h-full laptop:w-20 laptop:flex-col laptop:justify-start laptop:gap-xs laptop:border-t-0 laptop:border-e laptop:py-lg"
+      class="flex justify-around border-t border-border bg-background
+             lg:h-full lg:w-20 lg:flex-col lg:justify-start lg:gap-2 lg:border-t-0 lg:border-e lg:py-5"
       style="padding-bottom: env(safe-area-inset-bottom)"
       aria-label="주요 메뉴"
     >
@@ -29,7 +29,7 @@ interface NavItem {
           [routerLink]="item.path"
           routerLinkActive="text-primary"
           [routerLinkActiveOptions]="{ exact: item.exact }"
-          class="flex min-h-11 flex-1 flex-col items-center justify-center gap-xxs px-sm py-sm text-ink/70 transition-colors laptop:flex-none"
+          class="flex min-h-11 flex-1 flex-col items-center justify-center gap-1 px-3 py-3 text-muted-foreground transition-colors lg:flex-none"
         >
           <span aria-hidden="true">
             @switch (item.icon) {

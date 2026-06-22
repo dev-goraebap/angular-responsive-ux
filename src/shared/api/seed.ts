@@ -17,6 +17,11 @@ export const SEED_GENRES: Genre[] = [
   { key: 'horror', label: '공포' },
 ];
 
+/** 장르 키 → 표시명. 키만 가진 곳(영화의 genres)에서 라벨을 빠르게 찾는다. */
+export const GENRE_LABELS: Record<string, string> = Object.fromEntries(
+  SEED_GENRES.map((g) => [g.key, g.label]),
+);
+
 export const SEED_MOVIES: Movie[] = [
   {
     id: 'orbit-of-silence',
