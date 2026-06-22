@@ -22,7 +22,7 @@ export const GENRE_LABELS: Record<string, string> = Object.fromEntries(
   SEED_GENRES.map((g) => [g.key, g.label]),
 );
 
-export const SEED_MOVIES: Movie[] = [
+const CURATED_MOVIES: Movie[] = [
   {
     id: 'orbit-of-silence',
     title: '침묵의 궤도',
@@ -264,3 +264,51 @@ export const SEED_MOVIES: Movie[] = [
     featured: false,
   },
 ];
+
+/**
+ * 추가 카탈로그 — 무한 스크롤·검색을 시연할 만큼 양을 채우기 위한 생성 데이터.
+ * 업무: 큐레이션된 영화 뒤에 붙는다. 무작위가 아니라 인덱스 기반이라 재현 가능하다(목 데이터).
+ */
+function buildGeneratedMovies(): Movie[] {
+  const prefixes = [
+    '붉은', '마지막', '조용한', '잃어버린', '끝없는', '새벽의', '검은', '은빛',
+    '머나먼', '부서진', '영원한', '작은', '거대한', '숨겨진', '마른', '푸른',
+  ];
+  const nouns = [
+    '도시', '약속', '정원', '기록', '항해', '파도', '겨울', '신호', '노래', '계절',
+    '연대기', '복도', '정거장', '초상', '지도', '문', '불꽃', '폐허', '여행자', '경계',
+  ];
+  const genreKeys = SEED_GENRES.map((g) => g.key);
+  const directors = ['김서연', '이도훈', '박가람', '정해린', '최유진', '윤재호', '강미소', '임건우', '오세아', '한별'];
+  const cast = ['김민', '이준', '박서', '정우', '최아', '윤하', '강토', '임수', '오린', '한결', '서윤', '도경'];
+  const palette = [
+    '#1e2a4a', '#4a1e1e', '#4a3a1e', '#1e3a4a', '#2e4a1e', '#3a1e2a', '#2a1e4a', '#1e1e2e',
+    '#4a2e3a', '#2a3a4a', '#3a3a1e', '#1e2a3a', '#4a3a2e', '#1e3a3a', '#4a4a1e', '#1e2e1e',
+  ];
+
+  const movies: Movie[] = [];
+  for (let i = 0; i < 64; i++) {
+    const title = `${prefixes[(i * 5) % prefixes.length]} ${nouns[(i * 3) % nouns.length]}`;
+    const g1 = genreKeys[i % genreKeys.length];
+    const g2 = genreKeys[(i + 3) % genreKeys.length];
+    movies.push({
+      id: `gen-${i}`,
+      title,
+      year: 2015 + (i % 11),
+      genres: g1 === g2 ? [g1] : [g1, g2],
+      runtime: 92 + (i % 58),
+      synopsis: `${title} — ${nouns[(i * 7) % nouns.length]}을(를) 둘러싼 이야기. (데모용 생성 데이터)`,
+      director: directors[i % directors.length],
+      cast: [cast[i % cast.length], cast[(i + 5) % cast.length]],
+      posterColor: palette[i % palette.length],
+      // 3.0 ~ 5.0, 소수 한 자리.
+      ratingAverage: Math.round(30 + ((i * 7) % 21)) / 10,
+      ratingCount: 50 + ((i * 37) % 1950),
+      featured: false,
+    });
+  }
+  return movies;
+}
+
+/** 시드에 적재되는 전체 영화(큐레이션 + 생성). */
+export const SEED_MOVIES: Movie[] = [...CURATED_MOVIES, ...buildGeneratedMovies()];
