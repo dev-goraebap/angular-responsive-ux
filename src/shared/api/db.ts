@@ -63,7 +63,9 @@ class AppDB extends Dexie {
   ratings!: Table<Rating, [string, string]>;
 
   constructor() {
-    super('responsive-ux');
+    // 기술: 영화 카탈로그 전용 새 DB 이름. 투두 시절의 'responsive-ux'와 분리해
+    // 기존 DB의 스키마 충돌(같은 이름·다른 스키마)을 원천 차단한다.
+    super('cinecat');
     this.version(1).stores({
       // *genres = 다중 인덱스(장르별), year·ratingAverage = 정렬/필터 인덱스.
       // featured는 boolean이라 인덱스 대상이 아니다(IndexedDB는 불리언 키 미지원) → 메모리 필터로 거른다.
@@ -74,10 +76,12 @@ class AppDB extends Dexie {
       ratings: '[userId+movieId], userId, movieId',
     });
 
-    // 기술: populate는 DB가 처음 생성될 때 한 번만 실행된다. 읽기 전용 카탈로그를 시드한다.
-    this.on('populate', () => {
-      this.genres.bulkAdd(SEED_GENRES);
-      this.movies.bulkAdd(SEED_MOVIES);
+    // 기술: 읽기 전용 카탈로그를 시드한다. 매 오픈 시 비어 있으면 채우는 idempotent 방식이라
+    // 최초 생성뿐 아니라 어떤 이유로 비어 있어도 복구된다.
+    this.on('ready', async () => {
+      if ((await this.movies.count()) > 0) return;
+      await this.genres.bulkPut(SEED_GENRES);
+      await this.movies.bulkPut(SEED_MOVIES);
     });
   }
 }
