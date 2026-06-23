@@ -31,6 +31,18 @@ description: Guidance for designing and implementing responsive web UX strategie
 * **모바일 (풀스크린/바텀시트)**: 물리적 크기가 작은 화면에서는 중앙 모달 대신 하단 바텀시트나 전체 화면 페이지를 활용해 가독성과 터치 도달률을 확보합니다.
 * **설계 지침**:
   - CSS 미디어 쿼리(컨테이너 쿼리)를 사용해 컴포넌트 자체의 정적 스타일을 조정하고, JS의 Breakpoint 관찰기(예: `ResizeObserver`, 프레임워크의 Breakpoint 관찰 유틸)를 사용하여 동적 렌더링 분기(모달 서비스 호출 vs 라우팅 이동)를 결합합니다.
+* **그릇 선택 — 페이지 vs 모달 (복잡도·체류 시간 기준)**: "적응형 스왑(모바일↔데스크톱)"과 "페이지냐 모달이냐"는 **별개의 두 축**입니다. 먼저 콘텐츠의 **복잡도·체류 시간**으로 페이지/모달을 가른 뒤, 그 그릇을 환경에 맞게 스왑합니다. 원칙은 **큰 편집 흐름은 전용 페이지(풀스크린)로, 짧은 보조 입력만 모달/시트로** 담는 것입니다.
+
+| 신호 | → 페이지(풀스크린) | → 모달/시트 |
+|------|--------------------|-------------|
+| 작업 길이 | 길다(다단계·장시간) | 짧다(한 번에 끝) |
+| 콘텐츠 양 | 크다(대형 폼·편집기) | 작다(필드 몇 개) |
+| 진입/복귀 | 새로고침·딥링크·임시저장 복귀 필요 | 목록 컨텍스트 유지가 더 중요 |
+| 예시 | 마법사, 대형 등록/수정 폼 | 생성 다이얼로그, 항목 선택, 확인창, 짧은 메모 |
+
+  - **근거 (공식 가이드라인)**: Apple HIG는 "모달을 최소화하라(Minimize modality)"며 ①꼭 주의를 끌어야 하거나 ②작업을 완료/포기해야 진행되거나 ③중요한 데이터를 저장할 때만 모달을 권합니다. 풀스크린 모달리티는 **복잡하거나 몰입형인 작업에만 신중히** 쓰라고 합니다(=다단계·대형 편집은 전용 페이지가 적합). Material 3는 바텀시트를 보조 콘텐츠·액션용으로 한정하며, **큰 화면에서는 바텀시트 대신 메뉴/다이얼로그가 더 적합**하다고 봅니다(같은 콘텐츠라도 뷰포트에 따라 그릇을 스왑).
+    - 출처: HIG [Modality](https://developer.apple.com/design/human-interface-guidelines/modality) · [Sheets](https://developer.apple.com/design/human-interface-guidelines/sheets), Material [Dialogs](https://m3.material.io/components/dialogs/guidelines) · [Bottom sheets](https://m3.material.io/components/bottom-sheets/guidelines)
+  - **보강**: 모바일에서는 중앙 모달을 쓰지 않고 풀스크린 페이지나 바텀시트로 대체합니다(터치 도달률·가독성). 페이지든 모달이든 **canonical URL**을 유지해 공유·딥링크·뒤로가기 일관성을 보존합니다(아래 패턴 2 참조).
 
 ### 2. 뒤로가기 & 오버레이 연동 (CloseWatcher & Back Button Control)
 * **기대 수준**: 모바일 사용자는 화면 위에 다이얼로그나 바텀시트가 떠 있는 상태에서 하드웨어/제스처 뒤로가기를 하면, 이전 웹 페이지로 가는 대신 **현재 활성화된 오버레이만 닫히기를** 원합니다.
@@ -97,136 +109,6 @@ description: Guidance for designing and implementing responsive web UX strategie
 ### 5단계: 관심사가 독립된 콘텐츠 작성 및 조립 (Component & Page Assembly)
 * 순수 폼(Form)이나 데이터 상세 컴포넌트가 UI 래퍼의 형태(바텀시트인지 페이지인지)에 직접 의존하지 않게 작성합니다.
 * 데이터 저장 상태, 햅틱 피드백, 공유 버튼 등을 뷰포트에 맞게 탑재하고 최종 검증합니다.
-
----
-
-## 구현 레퍼런스 예시 (참고용)
-
-### 예시 A: Angular 환경에서 CDK Overlay 기반 적응형 시트 서비스
-아래는 모바일 바텀시트와 데스크톱 중앙 모달을 스왑하며 CloseWatcher/Router 이벤트를 사용해 뒤로가기 처리를 통합한 Angular 코드의 핵심 골격입니다.
-
-```typescript
-import { inject, Service, Injector } from '@angular/core';
-import { Overlay } from '@angular/cdk/overlay';
-import { ComponentPortal, ComponentType } from '@angular/cdk/portal';
-import { Router, NavigationStart } from '@angular/router';
-import { filter, take } from 'rxjs';
-import { BreakpointService } from './breakpoint.service'; // 768px 분기 감지 서비스
-
-export class AdaptiveSheetRef {
-  private cleanup?: () => void;
-  constructor(private overlayRef: any, readonly isMobile: boolean) {}
-
-  _registerCleanup(fn: () => void) { this.cleanup = fn; }
-
-  close() {
-    this.cleanup?.();
-    this.overlayRef.dispose();
-  }
-}
-
-@Service()
-export class AdaptiveSheetService {
-  private overlay = inject(Overlay);
-  private bp = inject(BreakpointService);
-  private router = inject(Router);
-  private injector = inject(Injector);
-
-  open(component: ComponentType<any>, data?: any): AdaptiveSheetRef {
-    const isMobile = this.bp.isMobile();
-    
-    // 모바일은 바텀시트 포지셔닝, 데스크톱은 중앙 배치
-    const positionStrategy = isMobile
-      ? this.overlay.position().global().bottom('0').left('0')
-      : this.overlay.position().global().centerHorizontally().centerVertically();
-
-    const overlayRef = this.overlay.create({
-      hasBackdrop: true,
-      positionStrategy,
-      scrollStrategy: this.overlay.scrollStrategies.block(),
-    });
-
-    const ref = new AdaptiveSheetRef(overlayRef, isMobile);
-
-    // 모바일 뒤로가기/Esc 대응: CloseWatcher 지원 브라우저는 CloseWatcher 바인딩
-    const CloseWatcherClass = (globalThis as any).CloseWatcher;
-    const watcher = CloseWatcherClass ? new CloseWatcherClass() : null;
-    if (watcher) {
-      watcher.onclose = () => ref.close();
-    }
-
-    // CloseWatcher 미지원 시, 라우터 페이지 이동이 감지되면 자동으로 오버레이 정리
-    const navSub = this.router.events
-      .pipe(filter(e => e instanceof NavigationStart), take(1))
-      .subscribe(() => ref.close());
-
-    ref._registerCleanup(() => {
-      watcher?.destroy();
-      navSub.unsubscribe();
-    });
-
-    const customInjector = Injector.create({
-      providers: [{ provide: AdaptiveSheetRef, useValue: ref }],
-      parent: this.injector
-    });
-
-    overlayRef.attach(new ComponentPortal(component, null, customInjector));
-    overlayRef.backdropClick().subscribe(() => ref.close());
-    
-    return ref;
-  }
-}
-```
-
-### 예시 B: React 환경에서 CloseWatcher 기반의 모바일 오버레이 닫기 커스텀 훅
-React 환경에서 다이얼로그나 드로어가 열릴 때 뒤로가기를 시스템 레벨에서 감지하여 닫아주기 위한 React 예제 가이드라인입니다.
-
-```javascript
-import { useEffect } from 'react';
-
-/**
- * 모바일 뒤로가기 제스처 / ESC 키를 눌렀을 때 오버레이를 닫기 위한 훅
- * @param {boolean} isOpen - 오버레이 활성화 여부
- * @param {Function} onClose - 오버레이 해제 함수
- */
-export function useCloseWatcher(isOpen, onClose) {
-  useEffect(() => {
-    if (!isOpen) return;
-
-    // 브라우저에서 CloseWatcher API를 지원하는 경우
-    if ('CloseWatcher' in window) {
-      const watcher = new window.CloseWatcher();
-      watcher.onclose = () => {
-        onClose();
-      };
-      
-      return () => {
-        watcher.destroy();
-      };
-    }
-
-    // CloseWatcher 미지원 시: History API Fallback
-    // 가짜 엔트리를 생성하여 뒤로가기 차단 및 해제 연동
-    const stateName = 'overlay-dismiss-watcher';
-    window.history.pushState(stateName, '');
-
-    const handlePopState = (event) => {
-      // popstate가 발생하면 오버레이를 닫음
-      onClose();
-    };
-
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-      // 만약 컴포넌트가 직접 닫기(X 버튼 등)로 소멸되는 중이라면, 가짜 히스토리 엔트리 정리
-      if (window.history.state === stateName) {
-        window.history.back();
-      }
-    };
-  }, [isOpen, onClose]);
-}
-```
 
 ---
 
